@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: johnmaria-eta-container
-        image: johnmaria/health-care-webapp
+        image: johnmaria/health-care-webapp:latest
         ports:
         - containerPort: 8082
 ---
