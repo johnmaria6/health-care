@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: johnmaria-eta-deploy
   labels:
-    app: johnmaria-eta-deploy-lbl
+    app: johnmaria-eta-app
 spec:
   replicas: 3
   selector:
@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: johnmaria-eta-container
-        image: johnmaria/health-care-webapp:latest
+        image: johnmaria/health-care-webapp
         ports:
         - containerPort: 8082
 ---
@@ -28,10 +28,10 @@ metadata:
     app: johnmaria-eta-app
 spec:
   selector:
-    app: johnmaria-eta-deploy-lbl
+    app: johnmaria-eta-app
 
   type: NodePort
   ports:
-  - nodePort: 31030
+  - nodePort: 31028
     port: 8082
     targetPort: 8082
