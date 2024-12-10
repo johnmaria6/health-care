@@ -1,0 +1,56 @@
+pipeline {
+     agent { label 'slave-node' }
+        
+        environment {	
+		DOCKERHUB_CREDENTIALS=credentials('800ce5ac-b895-4003-8bc0-632e92efed7e')
+	}
+    stages {
+        stage('SCM_Checkout') {
+            steps {
+                echo 'Perform SCM Checkout'
+                git 'https://github.com/johnmaria6/health-care.git'
+                
+            }
+        }
+        stage('Application Build') {
+            steps {
+                echo 'Perform Application Build'
+                sh 'mvn clean package'
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                echo 'Perform Docker Build'
+				sh "docker build -t johnmaria/health-care-webapp:${BUILD_NUMBER} ."
+				sh "docker tag johnmaria/health-care-webapp:${BUILD_NUMBER} johnmaria/health-care-webapp:latest"
+				sh 'docker image list'
+            }
+        }
+        stage('Login to Dockerhub') {
+            steps {
+                echo 'Login to DockerHub'				
+				sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                
+            }
+        }
+        stage('Publish the Image to Dockerhub') {
+            steps {
+                echo 'Publish to DockerHub'
+				sh "docker push johnmaria/health-care-webapp:latest"                
+            }
+        }
+        //stage('Deploy ansible') {
+        //    steps{
+           //  ansiblePlaybook become: true, becomeUser: 'devopsadmin', credentialsId: 'c13a3c7d-73ce-4a3e-94dc-62a3274f1dd9', disableHostKeyChecking: true, installation: 'ansible', inventory: '/etc/ansible/hosts', playbook: 'ansible-playbook.yml', vaultTmpPath: ''
+         //    }
+        //}
+        stage('Deploy to Kubernetes Cluster') {
+            steps {
+				script {sshPublisher(publishers: [sshPublisherDesc(configName: 'KuberneteMaster', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'kubectl apply -f kubedeploy.yaml', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '.', remoteDirectorySDF: false, removePrefix: '', sourceFiles: '*.yaml')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+				
+			}				          
+            }
+        }
+
+    }
+}
