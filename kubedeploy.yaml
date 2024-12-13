@@ -5,7 +5,7 @@ metadata:
   labels:
     app: johnmaria-eta-app
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: johnmaria-eta-app
